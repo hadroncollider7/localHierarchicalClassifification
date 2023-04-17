@@ -14,6 +14,20 @@ from numpy_methods import concatStringArray
 import os
 os.system("cls")
 
+def data_preprocess(data):
+    # Remove rows with NaN in Column
+    data.dropna(
+        subset=["Text", "Cat1", "Cat2", "Cat3"]
+    )
+    # Rebuild index
+    data.reset_index(drop=True, inplace=True)
+    X1 = data['Title'].to_numpy(dtype='U')
+    X2 = data['Text'].to_numpy(dtype='U')
+    X = concatStringArray(X1, X2)
+    y = data[['Cat1', 'Cat2', 'Cat3']].to_numpy(dtype='U')
+    print('X shape: {0}\ny shape: {1}'.format(np.shape(X), np.shape(y)))
+    return data, X, y
+
 # Load model from disk
 filepath = './models/lcppn.sav'
 pipeline = pickle.load(open(filepath, "rb"))
@@ -26,18 +40,7 @@ data_val = pd.concat([data_train, data_test], ignore_index=True)
 print('data shape: ', data_val.shape)
 
 
-# Remove rows with NaN in Column
-data_test.dropna(
-    subset=["Text", "Cat1", "Cat2", "Cat3"]
-)
-# Rebuild index
-data_test.reset_index(drop=True, inplace=True)
-X1 = data_test['Title'].to_numpy(dtype='U')
-X2 = data_test['Text'].to_numpy(dtype='U')
-X = concatStringArray(X1, X2)
-y = data_test[['Cat1', 'Cat2', 'Cat3']].to_numpy(dtype='U')
-print('X shape: {0}\ny shape: {1}'.format(np.shape(X), np.shape(y)))
-
+data_test, X, y = data_preprocess(data_test)
 
 predictions = pipeline.predict(X)
 print("predictions shape: ", predictions.shape)
